@@ -1,0 +1,103 @@
+:root {
+    --bg-color: #0f3628; /* Dark Christmas Green */
+    --board-bg: #fffbf0; /* Snow Cream */
+    --accent: #d32f2f; /* Santa Red */
+    --gold: #ffca28; /* Star Gold */
+    --text-color: #3e2723;
+    --modal-overlay: rgba(15, 54, 40, 0.95);
+}
+
+body {
+    font-family: 'Nunito', sans-serif; /* Friendly Round Font */
+    background-color: var(--bg-color);
+    background-image: radial-gradient(#1a5e47 1px, transparent 1px);
+    background-size: 20px 20px;
+    color: white;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* UI Header */
+header { text-align: center; margin-top: 20px; }
+h1 { margin: 0; font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+.subtitle { color: var(--gold); font-size: 1rem; margin-bottom: 10px; }
+
+/* The Game Board */
+.game-container {
+    position: relative;
+    padding: 10px;
+    background: #c0392b;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    margin-top: 20px;
+}
+
+#grid {
+    display: grid;
+    grid-template-columns: repeat(6, 50px);
+    grid-template-rows: repeat(6, 50px);
+    gap: 0;
+    background: var(--board-bg);
+    border: 4px solid #5d4037;
+    filter: blur(0px);
+    transition: filter 0.5s;
+}
+
+/* Blur effect for Daily Start */
+.blurred { filter: blur(15px) !important; pointer-events: none; }
+
+.cell {
+    width: 50px; height: 50px;
+    display: flex; justify-content: center; align-items: center;
+    font-size: 1.8rem; cursor: pointer;
+    border: 1px solid rgba(0,0,0,0.1);
+    user-select: none;
+}
+.cell:hover { background-color: rgba(255,255,255,0.3); }
+
+/* Region Colors (Pastel Christmas) */
+.region-0 { background-color: #a5d6a7; } /* Mint */
+.region-1 { background-color: #ef9a9a; } /* Berry */
+.region-2 { background-color: #fff59d; } /* Gold */
+.region-3 { background-color: #bcaaa4; } /* Wood */
+.region-4 { background-color: #90caf9; } /* Ice */
+.region-5 { background-color: #ce93d8; } /* Plum */
+
+/* Controls */
+.controls { margin-top: 20px; display: flex; gap: 10px; }
+button {
+    padding: 12px 24px;
+    border-radius: 50px;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: transform 0.1s;
+}
+.btn-primary { background: var(--gold); color: var(--text-color); }
+.btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5); }
+button:active { transform: scale(0.95); }
+
+/* Overlays */
+.overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    z-index: 10;
+}
+.hidden { display: none !important; }
+#start-overlay { background: rgba(0,0,0,0.2); }
+
+/* Leaderboard */
+#leaderboard-box {
+    margin-top: 30px;
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 10px;
+    width: 300px;
+    text-align: center;
+}
+.lb-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
