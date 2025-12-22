@@ -3,48 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Poogy's Carrot Hunt</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <title>Poogy's Garden</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <h1>Poogy 🐰</h1>
-        <div class="subtitle">The Carrot Hunt</div>
-        <div id="mode-title" style="font-size: 0.9rem; opacity: 0.8;">Daily Challenge</div>
+        <svg class="poogy-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <g>
+                <ellipse cx="35" cy="30" rx="10" ry="25" fill="#fff" stroke="#eee" stroke-width="2"/>
+                <ellipse cx="65" cy="30" rx="10" ry="25" fill="#fff" stroke="#eee" stroke-width="2"/>
+                <ellipse cx="35" cy="30" rx="6" ry="18" fill="#ffcdd2"/>
+                <ellipse cx="65" cy="30" rx="6" ry="18" fill="#ffcdd2"/>
+                <circle cx="50" cy="60" r="30" fill="#fff" stroke="#eee" stroke-width="2"/>
+                <circle cx="40" cy="55" r="3" fill="#333"/>
+                <circle cx="60" cy="55" r="3" fill="#333"/>
+                <ellipse cx="50" cy="62" rx="4" ry="3" fill="#ff8a80"/>
+                <path d="M 45 68 Q 50 72 55 68" stroke="#333" stroke-width="2" fill="none"/>
+            </g>
+        </svg>
+        <h1>Poogy</h1>
+        <div class="subtitle">The Garden Hunt</div>
+        <div id="mode-title" style="font-size: 0.8rem; opacity: 0.7;">Loading...</div>
     </header>
 
     <div class="game-container">
         <div id="start-overlay" class="overlay">
-            <h2 style="font-size:2rem; margin-bottom:5px">Ready?</h2>
-            <p style="margin-bottom:20px">Find 6 hidden carrots.<br>1 per region, row, and column.<br>No touching!</p>
+            <h2 style="color:#2e7d32; font-size:2rem; margin-bottom:10px">Ready?</h2>
+            <p style="margin-bottom:20px; text-align:center; color:#555">
+                Find 6 Carrots.<br>
+                1 per region, row, and column.<br>
+                <strong>No touching!</strong>
+            </p>
             <button class="btn-primary" onclick="startGame()">START DIGGING</button>
-            <button class="btn-secondary" onclick="initGame('practice')" style="margin-top:10px; font-size:0.8rem">Practice Mode</button>
         </div>
 
-        <div id="win-modal" class="overlay hidden" style="background: var(--modal-overlay);">
+        <div id="win-modal" class="overlay hidden">
             <div style="font-size: 4rem;">🥕</div>
-            <h2>DELICIOUS!</h2>
-            <p>Time: <span id="final-score" style="color:var(--gold); font-weight:bold"></span></p>
+            <h2>YUMMY!</h2>
+            <p>Time: <span id="final-score" style="color:var(--accent); font-weight:bold"></span></p>
             <button class="btn-primary" onclick="shareScore()">SHARE SCORE</button>
-            <button class="btn-secondary" onclick="location.reload()" style="margin-top:10px">Play Again</button>
+            <button onclick="location.reload()" style="margin-top:15px; background:none; border:1px solid white; color:white; font-size:0.9rem; padding: 10px 20px;">Play Again</button>
         </div>
 
         <div id="grid" class="blurred"></div>
     </div>
 
     <div class="controls">
-        <div id="time-display" style="font-size: 1.5rem; font-family: monospace; align-self: center;">00:00</div>
-        <button id="check-btn" class="btn-primary" onclick="checkWin()">DIG FOR CARROTS</button>
+        <div id="time-display" style="font-size: 2rem; font-weight:900; color:#2e7d32;">00:00</div>
+        <button id="check-btn" class="btn-primary" onclick="checkWin()">CHECK GARDEN</button>
     </div>
 
     <div id="leaderboard-box">
-        <h3>🌍 Global Diggers</h3>
+        <h3 style="margin:0 0 10px 0;">🏆 Top Gardeners</h3>
         <div class="lb-row"><span>1. 🇮🇹 SpeedyBunny</span> <span>00:24</span></div>
         <div class="lb-row"><span>2. 🇺🇸 Hopper</span> <span>00:32</span></div>
         <div class="lb-row"><span>3. 🇯🇵 Mochi</span> <span>00:45</span></div>
-        <div style="font-size: 0.8rem; margin-top:10px; opacity:0.6">Database Connected</div>
     </div>
 
     <script src="game.js"></script>

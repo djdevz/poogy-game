@@ -1,18 +1,27 @@
 :root {
-    --bg-color: #0f3628; /* Dark Christmas Green */
-    --board-bg: #fffbf0; /* Snow Cream */
-    --accent: #d32f2f; /* Santa Red */
-    --gold: #ffca28; /* Star Gold */
-    --text-color: #3e2723;
-    --modal-overlay: rgba(15, 54, 40, 0.95);
+    --bg-color: #e0f7fa; /* Sky Blue */
+    --board-bg: #ffffff;
+    --accent: #ffb74d; /* Sunny Orange */
+    --text-color: #37474f;
+    --modal-overlay: rgba(55, 71, 79, 0.95);
+    
+    /* Garden Pastel Regions */
+    --r0: #aed581; /* Light Green */
+    --r1: #ffab91; /* Soft Red */
+    --r2: #fff59d; /* Sunny Yellow */
+    --r3: #bcaaa4; /* Dirt Brown */
+    --r4: #81d4fa; /* Water Blue */
+    --r5: #ce93d8; /* Flower Purple */
 }
 
 body {
-    font-family: 'Nunito', sans-serif; /* Friendly Round Font */
+    font-family: 'Nunito', sans-serif;
     background-color: var(--bg-color);
-    background-image: radial-gradient(#1a5e47 1px, transparent 1px);
+    /* Cute dotted background pattern */
+    background-image: radial-gradient(#b2ebf2 20%, transparent 20%);
+    background-position: 0 0, 10px 10px;
     background-size: 20px 20px;
-    color: white;
+    color: var(--text-color);
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -20,18 +29,19 @@ body {
     min-height: 100vh;
 }
 
-/* UI Header */
 header { text-align: center; margin-top: 20px; }
-h1 { margin: 0; font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
-.subtitle { color: var(--gold); font-size: 1rem; margin-bottom: 10px; }
+h1 { margin: 0; font-size: 2.5rem; color: #2e7d32; }
+.subtitle { color: #558b2f; font-size: 1.1rem; margin-bottom: 5px; font-weight: bold; }
 
-/* The Game Board */
+/* Poogy Icon Styling */
+.poogy-icon { width: 60px; height: 60px; margin-bottom: -10px; }
+
 .game-container {
     position: relative;
-    padding: 10px;
-    background: #c0392b;
+    padding: 12px;
+    background: #81c784; /* Grass border */
     border-radius: 15px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 0px #558b2f; /* 3D effect */
     margin-top: 20px;
 }
 
@@ -41,45 +51,45 @@ h1 { margin: 0; font-size: 2.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
     grid-template-rows: repeat(6, 50px);
     gap: 0;
     background: var(--board-bg);
-    border: 4px solid #5d4037;
-    filter: blur(0px);
-    transition: filter 0.5s;
+    border: 4px solid #fff;
+    border-radius: 8px;
+    transition: filter 0.3s;
 }
 
-/* Blur effect for Daily Start */
-.blurred { filter: blur(15px) !important; pointer-events: none; }
+.blurred { filter: blur(10px) opacity(0.5); pointer-events: none; }
 
 .cell {
     width: 50px; height: 50px;
     display: flex; justify-content: center; align-items: center;
     font-size: 1.8rem; cursor: pointer;
-    border: 1px solid rgba(0,0,0,0.1);
+    border: 1px solid rgba(0,0,0,0.05);
     user-select: none;
+    transition: all 0.1s;
 }
-.cell:hover { background-color: rgba(255,255,255,0.3); }
+.cell:active { transform: scale(0.9); }
 
-/* Region Colors (Pastel Christmas) */
-.region-0 { background-color: #a5d6a7; } /* Mint */
-.region-1 { background-color: #ef9a9a; } /* Berry */
-.region-2 { background-color: #fff59d; } /* Gold */
-.region-3 { background-color: #bcaaa4; } /* Wood */
-.region-4 { background-color: #90caf9; } /* Ice */
-.region-5 { background-color: #ce93d8; } /* Plum */
+/* Apply Region Colors */
+.region-0 { background-color: var(--r0); }
+.region-1 { background-color: var(--r1); }
+.region-2 { background-color: var(--r2); }
+.region-3 { background-color: var(--r3); }
+.region-4 { background-color: var(--r4); }
+.region-5 { background-color: var(--r5); }
 
 /* Controls */
-.controls { margin-top: 20px; display: flex; gap: 10px; }
+.controls { margin-top: 30px; display: flex; gap: 10px; align-items: center; flex-direction: column; }
 button {
-    padding: 12px 24px;
+    padding: 15px 40px;
     border-radius: 50px;
     border: none;
-    font-weight: bold;
+    font-weight: 800;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.2);
     transition: transform 0.1s;
 }
-.btn-primary { background: var(--gold); color: var(--text-color); }
-.btn-secondary { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.5); }
-button:active { transform: scale(0.95); }
+.btn-primary { background: var(--accent); color: #fff; text-shadow: 1px 1px 0 rgba(0,0,0,0.2); }
+button:active { transform: translateY(4px); box-shadow: none; }
 
 /* Overlays */
 .overlay {
@@ -87,17 +97,20 @@ button:active { transform: scale(0.95); }
     display: flex; flex-direction: column;
     justify-content: center; align-items: center;
     z-index: 10;
+    border-radius: 10px;
 }
 .hidden { display: none !important; }
-#start-overlay { background: rgba(0,0,0,0.2); }
+#start-overlay { background: rgba(255,255,255,0.6); backdrop-filter: blur(5px); }
+#win-modal { background: var(--modal-overlay); color: white; }
 
 /* Leaderboard */
 #leaderboard-box {
     margin-top: 30px;
-    background: rgba(0,0,0,0.3);
-    padding: 15px;
-    border-radius: 10px;
-    width: 300px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    width: 280px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     text-align: center;
 }
-.lb-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.lb-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; color: #555; }
