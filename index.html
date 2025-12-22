@@ -30,36 +30,41 @@
 
     <div class="game-container">
         <div id="start-overlay" class="overlay">
-            <h2 style="color:#2e7d32; font-size:2rem; margin-bottom:10px">Ready?</h2>
-            <p style="margin-bottom:20px; text-align:center; color:#555">
-                Find 6 Carrots.<br>
-                1 per region, row, and column.<br>
-                <strong>No touching!</strong>
-            </p>
-            <button class="btn-primary" onclick="startGame()">START DIGGING</button>
+            <h2 style="color:#2e7d32; margin-bottom:10px">Select Mode</h2>
+            
+            <div style="background: rgba(255,255,255,0.8); padding:15px; border-radius:10px; margin-bottom:15px; width: 80%;">
+                <h3 style="margin:0 0 10px 0; font-size:1rem; color:#555">📅 Daily Challenge</h3>
+                <button class="btn-primary" onclick="initGame('daily')">PLAY DAILY</button>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.8); padding:15px; border-radius:10px; width: 80%;">
+                <h3 style="margin:0 0 10px 0; font-size:1rem; color:#555">🧩 Relax Mode (Untimed)</h3>
+                <div style="display:flex; gap:5px; justify-content:center;">
+                    <button class="btn-secondary" onclick="initGame('practice', 5)">Easy</button>
+                    <button class="btn-secondary" onclick="initGame('practice', 6)">Medium</button>
+                    <button class="btn-secondary" onclick="initGame('practice', 7)">Hard</button>
+                </div>
+            </div>
         </div>
 
         <div id="win-modal" class="overlay hidden">
             <div style="font-size: 4rem;">🥕</div>
             <h2>YUMMY!</h2>
-            <p>Time: <span id="final-score" style="color:var(--accent); font-weight:bold"></span></p>
-            <button class="btn-primary" onclick="shareScore()">SHARE SCORE</button>
-            <button onclick="location.reload()" style="margin-top:15px; background:none; border:1px solid white; color:white; font-size:0.9rem; padding: 10px 20px;">Play Again</button>
+            <p id="win-text">You found all the carrots!</p>
+            <button class="btn-primary" onclick="shareScore()">SHARE</button>
+            <button onclick="location.reload()" style="margin-top:15px; background:none; border:1px solid white; color:white; font-size:0.9rem; padding: 10px 20px; cursor: pointer;">Menu</button>
         </div>
 
         <div id="grid" class="blurred"></div>
     </div>
 
+    <p id="instruction-text" style="margin-top: 15px; font-weight: bold; color: #2e7d32;">
+        Find 6 Carrots. No Touching!
+    </p>
+
     <div class="controls">
         <div id="time-display" style="font-size: 2rem; font-weight:900; color:#2e7d32;">00:00</div>
         <button id="check-btn" class="btn-primary" onclick="checkWin()">CHECK GARDEN</button>
-    </div>
-
-    <div id="leaderboard-box">
-        <h3 style="margin:0 0 10px 0;">🏆 Top Gardeners</h3>
-        <div class="lb-row"><span>1. 🇮🇹 SpeedyBunny</span> <span>00:24</span></div>
-        <div class="lb-row"><span>2. 🇺🇸 Hopper</span> <span>00:32</span></div>
-        <div class="lb-row"><span>3. 🇯🇵 Mochi</span> <span>00:45</span></div>
     </div>
 
     <script src="game.js"></script>
