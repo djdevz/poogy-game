@@ -30,7 +30,7 @@ function generateLevel(seed) {
     let attempts = 0;
     let success = false;
 
-    // Keep trying to place carrots until we find a set that doesn't touch
+    // Keep trying to place carrots until we find a set that doesn't touch.
     while (!success && attempts < 1000) {
         attempts++;
         boardSolution = new Array(36).fill(false);
