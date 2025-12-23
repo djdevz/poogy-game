@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Poogy's OCD Rabbits</title>
+    <title>Poogy's Rabbits</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <div id="rain-container"></div>
+
     <header>
         <button id="exit-btn" class="btn-exit" onclick="location.reload()">✕</button>
-        
         <svg class="poogy-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <g>
                 <ellipse cx="35" cy="30" rx="10" ry="25" fill="#fff" stroke="#eee" stroke-width="2"/>
@@ -33,10 +34,9 @@
         <div id="start-overlay" class="overlay">
             
             <div class="story-box">
-                <strong>These rabbits are OCD!</strong><br>
+                <strong>The rabbits are picky!</strong><br>
                 They refuse to share a row, a column, or a color patch. 
                 <br>They also hate touching.
-                <br>Can you find spots for them all?
             </div>
 
             <div class="menu-card">
@@ -55,9 +55,9 @@
         </div>
 
         <div id="win-modal" class="overlay hidden">
-            <div style="font-size: 5rem;" class="carrot-win">🐰</div>
-            <h2>PERFECT!</h2>
-            <p id="win-text">Solved!</p>
+            <div style="font-size: 5rem;">🥕</div>
+            <h2>YAY!</h2>
+            <p id="win-text">Rabbits are happy!</p>
             <button class="btn-main" onclick="shareScore()">SHARE SCORE</button>
             <button onclick="location.reload()" style="margin-top:20px; background:none; border:none; color:white; text-decoration:underline; cursor:pointer;">Menu</button>
         </div>
@@ -66,9 +66,9 @@
     </div>
 
     <div class="controls-area">
-        <p id="instruction-text" style="color:#2e7d32; font-weight:bold;">Select a mode to start</p>
+        <p id="instruction-text" style="color:#2e7d32; font-weight:bold; font-size: 0.9rem;">Select a mode to start</p>
         <div id="time-display" style="font-size: 1.5rem; font-weight:bold; color:#2e7d32; margin-bottom:5px; display:none;">00:00</div>
-        <button id="check-btn" class="btn-main" onclick="checkWin()">CHECK SOLUTION</button>
+        <button id="check-btn" class="btn-main" onclick="checkWin()">CHECK RABBITS</button>
     </div>
 
     <script src="game.js"></script>

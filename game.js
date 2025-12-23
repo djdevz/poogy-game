@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
-let currentSize = 6;     // Changes to 7 for Hard Mode
-let targetCarrots = 6;
+let currentSize = 6;
+let targetRabbits = 6;
 let boardSolution = [];
 let regionMap = [];
 let playerBoard = [];
@@ -18,6 +18,8 @@ const winOverlay = document.getElementById('win-modal');
 const instructEl = document.getElementById('instruction-text');
 const exitBtn = document.getElementById('exit-btn');
 const modeTitle = document.getElementById('mode-title');
+const checkBtn = document.getElementById('check-btn');
+const rainContainer = document.getElementById('rain-container');
 
 // --- SEEDED RANDOM ---
 function mulberry32(a) {
@@ -29,8 +31,8 @@ function mulberry32(a) {
     }
 }
 
-// --- GENERATOR (Supports 6x6 and 7x7) ---
-function generateLevel(seed, size, numCarrots) {
+// --- GENERATOR ---
+function generateLevel(seed, size, numRabbits) {
     const rng = mulberry32(seed);
     const totalCells = size * size;
     let attempts = 0;
@@ -39,24 +41,21 @@ function generateLevel(seed, size, numCarrots) {
     while (!success && attempts < 20000) {
         attempts++;
         boardSolution = new Array(totalCells).fill(false);
-        let carrots = [];
+        let rabbits = [];
         
-        // Create arrays for rows/cols
         let rows = Array.from({length: size}, (_, i) => i);
         let cols = Array.from({length: size}, (_, i) => i);
         
-        // Shuffle
         rows.sort(() => rng() - 0.5);
         cols.sort(() => rng() - 0.5);
 
         let validPlacement = true;
         
-        for(let i=0; i < numCarrots; i++) {
+        for(let i=0; i < numRabbits; i++) {
             let r = rows[i];
             let c = cols[i];
             
-            // NO TOUCHING RULE (Diagonal & Orthogonal)
-            for(let existing of carrots) {
+            for(let existing of rabbits) {
                 if(Math.abs(existing.r - r) <= 1 && Math.abs(existing.c - c) <= 1) {
                     validPlacement = false;
                     break;
@@ -64,24 +63,22 @@ function generateLevel(seed, size, numCarrots) {
             }
             if(!validPlacement) break;
             
-            carrots.push({r, c, color: i}); // Color matches index (0-6)
+            rabbits.push({r, c, color: i}); 
             boardSolution[r * size + c] = true;
         }
 
-        if(validPlacement && carrots.length === numCarrots) {
+        if(validPlacement && rabbits.length === numRabbits) {
             success = true;
-            generateRegions(carrots, rng, size);
+            generateRegions(rabbits, rng, size);
         }
     }
     
-    // Safety fallback
     if(!success) {
-        console.log("Retrying generation...");
-        generateLevel(seed + 1, size, numCarrots);
+        generateLevel(seed + 1, size, numRabbits);
     }
 }
 
-function generateRegions(carrots, rng, size) {
+function generateRegions(rabbits, rng, size) {
     const totalCells = size * size;
     regionMap = new Array(totalCells).fill(-1);
     
@@ -91,12 +88,13 @@ function generateRegions(carrots, rng, size) {
             let minDst = 100;
             let closestRegion = 0;
             
-            carrots.forEach(carrot => {
-                let dist = Math.abs(carrot.r - r) + Math.abs(carrot.c - c);
-                dist += (rng() * 0.45); // Jitter for irregular shapes
+            rabbits.forEach(rabbit => {
+                let dist = Math.abs(rabbit.r - r) + Math.abs(rabbit.c - c);
+                // REDUCED JITTER: Changed from 0.45 to 0.1 to prevent orphan squares
+                dist += (rng() * 0.1); 
                 if(dist < minDst) {
                     minDst = dist;
-                    closestRegion = carrot.color;
+                    closestRegion = rabbit.color;
                 }
             });
             regionMap[idx] = closestRegion;
@@ -107,41 +105,35 @@ function generateRegions(carrots, rng, size) {
 // --- GAME LOGIC ---
 
 function selectMode(mode, difficulty) {
-    // 1. Determine Grid Size
     if (difficulty === 7) {
-        currentSize = 7; // Hard Mode is 7x7
+        currentSize = 7; 
     } else {
-        currentSize = 6; // Easy/Med/Daily are 6x6
+        currentSize = 6; 
     }
     
-    targetCarrots = difficulty;
+    targetRabbits = difficulty;
     currentMode = mode;
     
-    // 2. Set Grid CSS
     gridEl.style.gridTemplateColumns = `repeat(${currentSize}, 1fr)`;
     gridEl.style.gridTemplateRows = `repeat(${currentSize}, 1fr)`;
 
-    // 3. Setup Seed
     let seed;
     if (mode === 'daily') {
         const today = new Date().toISOString().slice(0, 10);
         seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         modeTitle.innerText = "Daily Challenge";
         timeEl.style.display = 'block';
-        // Daily is always Standard (6x6, 6 Carrots)
         currentSize = 6;
-        targetCarrots = 6;
+        targetRabbits = 6;
     } else {
         seed = Math.floor(Math.random() * 100000);
         modeTitle.innerText = "Relax Mode";
         timeEl.style.display = 'none';
     }
 
-    // 4. Update UI Text
-    instructEl.innerText = `Find ${targetCarrots} Rabbits. Must have their own Row, Col & Color!`;
+    instructEl.innerText = `Find ${targetRabbits} Rabbits. One per Row, Col & Color!`;
     
-    // 5. Generate and Start
-    generateLevel(seed, currentSize, targetCarrots);
+    generateLevel(seed, currentSize, targetRabbits);
     initBoard();
     startGame();
 }
@@ -154,7 +146,6 @@ function initBoard() {
         let cell = document.createElement('div');
         cell.className = `cell region-${regionMap[i]}`;
         cell.id = `c-${i}`;
-        // Using event listener instead of onclick attribute for better reliability
         cell.addEventListener('click', () => handleInput(i));
         gridEl.appendChild(cell);
     }
@@ -164,10 +155,15 @@ function startGame() {
     startOverlay.classList.add('hidden');
     winOverlay.classList.add('hidden');
     gridEl.classList.remove('blurred');
-    exitBtn.style.display = 'block'; // Show X button
+    rainContainer.innerHTML = ''; // Stop rain
+    exitBtn.style.display = 'block'; 
     isGameActive = true;
     penaltySeconds = 0;
     startTime = Date.now();
+    
+    // Reset Button State
+    checkBtn.innerText = "CHECK RABBITS";
+    checkBtn.style.background = "";
     
     clearInterval(timerInterval);
     if(currentMode === 'daily') {
@@ -190,8 +186,9 @@ function handleInput(idx) {
     playerBoard[idx] = !playerBoard[idx];
     const cell = document.getElementById(`c-${idx}`);
     
+    // EMOJI UPDATE: Rabbit instead of Hole
     if(playerBoard[idx]) {
-        cell.innerHTML = '<span class="animate-pop">🕳️</span>';
+        cell.innerHTML = '<span class="rabbit-pop">🐰</span>';
     } else {
         cell.innerHTML = ''; 
     }
@@ -200,12 +197,12 @@ function handleInput(idx) {
 function checkWin() {
     if(!isGameActive) return;
 
-    let holes = [];
-    playerBoard.forEach((hasHole, idx) => { if(hasHole) holes.push(idx); });
+    let rabbits = [];
+    playerBoard.forEach((hasRabbit, idx) => { if(hasRabbit) rabbits.push(idx); });
 
     // 1. Count Check
-    if (holes.length !== targetCarrots) {
-        showPenalty(`Find exactly ${targetCarrots}!`);
+    if (rabbits.length !== targetRabbits) {
+        showPenalty(`Place exactly ${targetRabbits} rabbits!`);
         return;
     }
 
@@ -214,29 +211,63 @@ function checkWin() {
     let regions = new Set();
 
     // 2. Logic Check
-    for (let h of holes) {
-        let r = Math.floor(h / currentSize);
-        let c = h % currentSize;
-        let reg = regionMap[h];
+    for (let rIdx of rabbits) {
+        let r = Math.floor(rIdx / currentSize);
+        let c = rIdx % currentSize;
+        let reg = regionMap[rIdx];
 
-        if (rows.has(r)) { showPenalty("Row Conflict!"); return; }
-        if (cols.has(c)) { showPenalty("Column Conflict!"); return; }
-        if (regions.has(reg)) { showPenalty("Color Conflict!"); return; }
+        if (rows.has(r)) { showPenalty("Row Conflict!"); triggerSadRabbits(); return; }
+        if (cols.has(c)) { showPenalty("Column Conflict!"); triggerSadRabbits(); return; }
+        if (regions.has(reg)) { showPenalty("Color Conflict!"); triggerSadRabbits(); return; }
 
         rows.add(r); cols.add(c); regions.add(reg);
 
         // 3. No Touching Check
-        for (let other of holes) {
-            if (h === other) continue;
+        for (let other of rabbits) {
+            if (rIdx === other) continue;
             let or = Math.floor(other / currentSize);
             let oc = other % currentSize;
             if (Math.abs(r - or) <= 1 && Math.abs(c - oc) <= 1) {
-                showPenalty("Too close!"); 
+                showPenalty("Rabbits are touching!");
+                triggerSadRabbits();
                 return;
             }
         }
     }
     doWin();
+}
+
+// ANIMATION LOGIC
+
+function triggerSadRabbits() {
+    // Make all placed rabbits fade/shake
+    for(let i=0; i<playerBoard.length; i++) {
+        if(playerBoard[i]) {
+            const cell = document.getElementById(`c-${i}`);
+            const span = cell.querySelector('span');
+            if(span) {
+                span.classList.remove('rabbit-pop');
+                span.classList.add('rabbit-sad');
+                // Reset after animation
+                setTimeout(() => {
+                    if(span) span.classList.remove('rabbit-sad');
+                }, 500);
+            }
+        }
+    }
+}
+
+function triggerRain() {
+    rainContainer.style.display = 'block';
+    for(let i=0; i<30; i++) {
+        let d = document.createElement('div');
+        d.className = 'falling-carrot';
+        d.innerText = '🥕';
+        d.style.left = Math.random() * 100 + 'vw';
+        d.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        d.style.fontSize = (Math.random() * 2 + 1) + 'rem';
+        rainContainer.appendChild(d);
+    }
 }
 
 function showPenalty(msg) {
@@ -245,32 +276,36 @@ function showPenalty(msg) {
         updateTimer();
     }
     
-    const btn = document.getElementById('check-btn');
-    const oldText = btn.innerText;
-    btn.style.backgroundColor = '#ef5350';
-    btn.innerText = msg;
+    const oldText = checkBtn.innerText;
+    checkBtn.style.backgroundColor = '#ef5350';
+    checkBtn.innerText = "Oh no! Rabbits unhappy!";
+    
     setTimeout(() => {
-        btn.style.backgroundColor = '';
-        btn.innerText = oldText;
-    }, 1500);
+        checkBtn.style.backgroundColor = '';
+        checkBtn.innerText = oldText;
+    }, 2000);
 }
 
 function doWin() {
     isGameActive = false;
     clearInterval(timerInterval);
     
-    // Show Real Rabbits
+    // Happy Dance Animation
     for(let i=0; i < currentSize * currentSize; i++) {
-        let cell = document.getElementById(`c-${i}`);
-        cell.innerHTML = '';
-        if(boardSolution[i]) {
-            cell.innerHTML = '<div class="carrot-win">🐰</div>';
+        if(playerBoard[i]) {
+            let cell = document.getElementById(`c-${i}`);
+            if(cell.firstChild) cell.firstChild.classList.add('rabbit-happy');
         }
     }
 
-    winOverlay.classList.remove('hidden');
-    let msg = (currentMode === 'daily') ? `Time: ${timeEl.innerText}` : "Solved!";
-    document.getElementById('win-text').innerText = msg;
+    triggerRain();
+
+    // Delay Win Overlay slightly to enjoy the animation
+    setTimeout(() => {
+        winOverlay.classList.remove('hidden');
+        let msg = (currentMode === 'daily') ? `Time: ${timeEl.innerText}` : "Solved!";
+        document.getElementById('win-text').innerText = msg;
+    }, 1500);
 }
 
 function shareScore() {
@@ -279,6 +314,6 @@ function shareScore() {
     alert("Score copied!");
 }
 
-// Initialize
+// Init
 gridEl.style.gridTemplateColumns = `repeat(6, 1fr)`;
 document.getElementById('mode-title').innerText = "Menu";
