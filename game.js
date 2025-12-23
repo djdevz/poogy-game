@@ -33,7 +33,6 @@ function generateLevel(seed, numCarrots) {
     let attempts = 0;
     let success = false;
 
-    // Retry loop to ensure valid board
     while (!success && attempts < 5000) {
         attempts++;
         boardSolution = new Array(36).fill(false);
@@ -48,12 +47,10 @@ function generateLevel(seed, numCarrots) {
         
         for(let i=0; i < numCarrots; i++) {
             let r, c;
-            // Strict rows/cols for the first 6
             if(i < 6) {
                 r = rows[i];
                 c = cols[i];
             } else {
-                // Find any empty spot for extra carrots (Hard mode)
                 let possible = [];
                 for(let x=0; x<36; x++) {
                     if(!boardSolution[x]) possible.push(x);
@@ -83,11 +80,7 @@ function generateLevel(seed, numCarrots) {
         }
     }
     
-    // Fallback if generation fails (very rare)
-    if(!success) {
-        console.log("Retry gen...");
-        generateLevel(seed + 1, numCarrots); 
-    }
+    if(!success) generateLevel(seed + 1, numCarrots); 
 }
 
 function generateRegions(carrots, rng) {
@@ -110,12 +103,11 @@ function generateRegions(carrots, rng) {
     }
 }
 
-// --- GAME STATE MANAGEMENT ---
+// --- GAME LOGIC ---
 
-// This function is called when a button is clicked
 function selectMode(mode, difficulty) {
     initGame(mode, difficulty);
-    startGame(); // Immediately start playing
+    startGame();
 }
 
 function initGame(mode, difficulty = 6) {
@@ -125,32 +117,32 @@ function initGame(mode, difficulty = 6) {
     isGameActive = false;
     penaltySeconds = 0;
     
-    // UI Updates
-    instructEl.innerText = `Find ${targetCarrots} Carrots. No touching!`;
-    
     let seed;
     if (mode === 'daily') {
         const today = new Date().toISOString().slice(0, 10);
         seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-        document.getElementById('mode-title').innerText = "Daily Challenge: " + today;
+        document.getElementById('mode-title').innerText = today;
         timeEl.style.display = 'block'; 
         targetCarrots = 6; 
-        instructEl.innerText = "Find 6 Carrots. No touching!";
+        instructEl.innerText = "Daily: 1 per Row, Col, Region.";
     } else if (mode === 'menu') {
-        // Just a background for the menu
         seed = Math.floor(Math.random() * 10000); 
-        document.getElementById('mode-title').innerText = "Select a Mode";
+        document.getElementById('mode-title').innerText = "Menu";
     } else {
-        // Practice Mode
         seed = Math.floor(Math.random() * 100000);
-        document.getElementById('mode-title').innerText = "Relax Mode (" + difficulty + " Carrots)";
+        document.getElementById('mode-title').innerText = "Relax Mode";
         timeEl.style.display = 'none'; 
+        
+        // CUSTOM TEXT FOR HARD MODE
+        if (difficulty > 6) {
+            instructEl.innerText = "HARD MODE: Rules Relaxed! Just don't touch.";
+        } else {
+            instructEl.innerText = `Find ${difficulty}. 1 per Row, Col, Region.`;
+        }
     }
 
     generateLevel(seed, targetCarrots);
     renderBoard();
-    
-    // Reset Timer UI
     timeEl.innerText = "00:00";
 }
 
@@ -186,7 +178,12 @@ function handleInput(idx) {
     if(!isGameActive) return;
     playerBoard[idx] = !playerBoard[idx];
     const cell = document.getElementById(`c-${idx}`);
-    cell.innerHTML = playerBoard[idx] ? '🕳️' : '';
+    
+    if(playerBoard[idx]) {
+        cell.innerHTML = '<span class="animate-pop">🕳️</span>';
+    } else {
+        cell.innerHTML = ''; 
+    }
 }
 
 function checkWin() {
@@ -195,13 +192,11 @@ function checkWin() {
     let holes = [];
     playerBoard.forEach((hasHole, idx) => { if(hasHole) holes.push(idx); });
 
-    // 1. Count Check
     if (holes.length !== targetCarrots) {
-        showPenalty(`Find exactly ${targetCarrots} carrots!`);
+        showPenalty(`Find exactly ${targetCarrots}!`);
         return;
     }
 
-    // 2. Rules Check
     let rows = new Set();
     let cols = new Set();
     let regions = new Set();
@@ -211,7 +206,7 @@ function checkWin() {
         let c = h % 6;
         let reg = regionMap[h];
 
-        // Strict Rules (Only apply if we have 6 or fewer carrots)
+        // Strict Rules (Only for Easy/Normal)
         if(targetCarrots <= 6) {
             if (rows.has(r)) { showPenalty("Row Conflict!"); return; }
             if (cols.has(c)) { showPenalty("Column Conflict!"); return; }
@@ -226,7 +221,7 @@ function checkWin() {
             let or = Math.floor(other / 6);
             let oc = other % 6;
             if (Math.abs(r - or) <= 1 && Math.abs(c - oc) <= 1) {
-                showPenalty("Rabbits are touching!"); 
+                showPenalty("Holes are too close!"); 
                 return;
             }
         }
@@ -238,11 +233,12 @@ function showPenalty(msg) {
     if(currentMode === 'daily') penaltySeconds += 10;
     
     const btn = document.getElementById('check-btn');
+    const oldText = btn.innerText;
     btn.style.backgroundColor = '#ef5350';
     btn.innerText = msg;
     setTimeout(() => {
         btn.style.backgroundColor = '';
-        btn.innerText = "CHECK GARDEN";
+        btn.innerText = oldText;
     }, 1500);
 }
 
@@ -250,9 +246,13 @@ function doWin() {
     isGameActive = false;
     clearInterval(timerInterval);
     
-    // Reveal Carrots
     for(let i=0; i<36; i++) {
-        if(boardSolution[i]) document.getElementById(`c-${i}`).innerHTML = '🥕';
+        // Clear board first to show carrots nicely
+        let cell = document.getElementById(`c-${i}`);
+        cell.innerHTML = '';
+        if(boardSolution[i]) {
+            cell.innerHTML = '<div class="carrot-win">🥕</div>';
+        }
     }
 
     winOverlay.classList.remove('hidden');
@@ -268,5 +268,4 @@ function shareScore() {
     alert("Score copied!");
 }
 
-// Initialize Menu Background
 initGame('menu');
