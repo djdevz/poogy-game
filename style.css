@@ -8,6 +8,9 @@
     /* Regions */
     --r0: #aed581; --r1: #ffab91; --r2: #fff59d;
     --r3: #bcaaa4; --r4: #81d4fa; --r5: #ce93d8;
+    
+    /* Hard Mode Single Color */
+    --hard-bg: #c5e1a5; 
 }
 
 * { box-sizing: border-box; }
@@ -21,17 +24,15 @@ body {
     color: var(--text-color);
     margin: 0;
     padding: 0;
-    /* Force single page, no scroll */
     height: 100vh; 
-    height: 100dvh; /* For mobile browsers */
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between; /* Space out header, game, controls */
+    justify-content: space-between;
     overflow: hidden; 
 }
 
-/* Compact Header */
 header { 
     text-align: center; 
     padding-top: 10px; 
@@ -44,19 +45,13 @@ h1 { margin: 0; font-size: 2rem; color: #2e7d32; line-height: 1; }
 .subtitle { color: #558b2f; font-size: 0.9rem; font-weight: bold; }
 .poogy-icon { width: 45px; height: 45px; margin-bottom: -5px; }
 
-/* Exit Button (Top Left) */
 .btn-exit {
     position: absolute;
-    left: 15px;
-    top: 15px;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    opacity: 0.6;
+    left: 15px; top: 15px;
+    background: none; border: none;
+    font-size: 1.5rem; cursor: pointer; opacity: 0.6;
 }
 
-/* Game Board - Flexible Size */
 .game-container {
     position: relative;
     padding: 8px;
@@ -64,18 +59,17 @@ h1 { margin: 0; font-size: 2rem; color: #2e7d32; line-height: 1; }
     border-radius: 12px;
     box-shadow: 0 5px 0px #558b2f;
     margin: 5px;
-    /* Ensure it doesn't get too huge on desktop */
-    max-width: 95vw;
-    max-height: 55vh; 
-    aspect-ratio: 1 / 1; /* Keep it square */
+    /* Fixed constraints to prevent layout breaking */
+    width: 95vw;
+    max-width: 450px; /* Prevents it getting too wide on desktop */
+    aspect-ratio: 1 / 1;
 }
 
 #grid {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     grid-template-rows: repeat(6, 1fr);
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     gap: 0;
     background: var(--board-bg);
     border: 3px solid #fff;
@@ -100,6 +94,12 @@ h1 { margin: 0; font-size: 2rem; color: #2e7d32; line-height: 1; }
 .region-4 { background-color: var(--r4); }
 .region-5 { background-color: var(--r5); }
 
+/* HARD MODE: Single Color Override */
+.hard-mode .cell {
+    background-color: var(--hard-bg) !important;
+    border: 1px solid rgba(255,255,255,0.4);
+}
+
 /* ANIMATIONS */
 @keyframes pop {
     0% { transform: scale(0.5); }
@@ -114,10 +114,10 @@ h1 { margin: 0; font-size: 2rem; color: #2e7d32; line-height: 1; }
 }
 .carrot-win { animation: bounce 0.6s infinite; }
 
-/* Controls Area (Sticks to bottom) */
+/* Controls Area */
 .controls-area {
     width: 100%;
-    padding: 10px 20px 20px 20px;
+    padding: 10px 20px 25px 20px;
     background: rgba(255,255,255,0.9);
     border-radius: 20px 20px 0 0;
     text-align: center;
@@ -128,14 +128,10 @@ h1 { margin: 0; font-size: 2rem; color: #2e7d32; line-height: 1; }
 
 .btn-main {
     padding: 15px 0;
-    width: 100%;
-    max-width: 300px;
-    border-radius: 50px;
-    border: none;
-    font-weight: 900;
-    font-size: 1.2rem;
-    color: white;
-    background: var(--accent);
+    width: 100%; max-width: 300px;
+    border-radius: 50px; border: none;
+    font-weight: 900; font-size: 1.2rem;
+    color: white; background: var(--accent);
     box-shadow: 0 4px 0 rgba(0,0,0,0.2);
     cursor: pointer;
 }
@@ -143,7 +139,7 @@ h1 { margin: 0; font-size: 2rem; color: #2e7d32; line-height: 1; }
 
 /* Overlays */
 .overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
     display: flex; flex-direction: column;
     justify-content: center; align-items: center;
     z-index: 20;
@@ -151,21 +147,24 @@ h1 { margin: 0; font-size: 2rem; color: #2e7d32; line-height: 1; }
 }
 .hidden { display: none !important; }
 
-#start-overlay { background: rgba(255,255,255,0.85); backdrop-filter: blur(5px); }
+#start-overlay { background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); }
 #win-modal { background: var(--modal-overlay); color: white; }
 
-/* Menu Buttons */
+/* Menu Buttons - FIXED WIDTH */
 .menu-card {
     background: white; 
-    padding: 15px; 
+    padding: 20px; 
     border-radius: 15px; 
     margin-bottom: 15px; 
     width: 90%;
+    min-width: 280px; /* Forces width to stay wide */
+    max-width: 320px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     text-align: center;
 }
 .btn-mode {
     background: #e0f2f1; color: #00695c;
-    border: none; padding: 10px 15px; margin: 2px;
+    border: none; padding: 12px 10px; margin: 2px;
     border-radius: 8px; font-weight: bold; cursor: pointer;
+    flex: 1; /* Distribute buttons evenly */
 }

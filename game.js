@@ -33,7 +33,7 @@ function generateLevel(seed, numCarrots) {
     let attempts = 0;
     let success = false;
 
-    while (!success && attempts < 5000) {
+    while (!success && attempts < 10000) {
         attempts++;
         boardSolution = new Array(36).fill(false);
         let carrots = [];
@@ -47,21 +47,33 @@ function generateLevel(seed, numCarrots) {
         
         for(let i=0; i < numCarrots; i++) {
             let r, c;
+            // Strict rows/cols only for standard game
             if(i < 6) {
                 r = rows[i];
                 c = cols[i];
             } else {
+                // Hard mode: Find any valid empty spot
                 let possible = [];
                 for(let x=0; x<36; x++) {
                     if(!boardSolution[x]) possible.push(x);
                 }
+                // Filter possible spots to ensure no touching before picking
+                possible = possible.filter(p => {
+                    let pr = Math.floor(p/6);
+                    let pc = p%6;
+                    for(let existing of carrots) {
+                         if(Math.abs(existing.r - pr) <= 1 && Math.abs(existing.c - pc) <= 1) return false;
+                    }
+                    return true;
+                });
+
                 if(possible.length === 0) { validPlacement = false; break; }
                 let pick = possible[Math.floor(rng() * possible.length)];
                 r = Math.floor(pick/6);
                 c = pick%6;
             }
             
-            // NO TOUCHING RULE
+            // NO TOUCHING RULE (Double check)
             for(let existing of carrots) {
                 if(Math.abs(existing.r - r) <= 1 && Math.abs(existing.c - c) <= 1) {
                     validPlacement = false;
@@ -80,7 +92,11 @@ function generateLevel(seed, numCarrots) {
         }
     }
     
-    if(!success) generateLevel(seed + 1, numCarrots); 
+    if(!success) {
+        // Fallback for rare generation failure
+        console.log("Retrying gen...");
+        generateLevel(seed + 1, numCarrots); 
+    }
 }
 
 function generateRegions(carrots, rng) {
@@ -117,6 +133,9 @@ function initGame(mode, difficulty = 6) {
     isGameActive = false;
     penaltySeconds = 0;
     
+    // Remove hard mode class initially
+    gridEl.classList.remove('hard-mode');
+
     let seed;
     if (mode === 'daily') {
         const today = new Date().toISOString().slice(0, 10);
@@ -133,9 +152,10 @@ function initGame(mode, difficulty = 6) {
         document.getElementById('mode-title').innerText = "Relax Mode";
         timeEl.style.display = 'none'; 
         
-        // CUSTOM TEXT FOR HARD MODE
+        // HARD MODE LOGIC
         if (difficulty > 6) {
-            instructEl.innerText = "HARD MODE: Rules Relaxed! Just don't touch.";
+            instructEl.innerText = `Find ${difficulty}. Just don't touch! (Ignore Colors)`;
+            gridEl.classList.add('hard-mode'); // Turn board single color
         } else {
             instructEl.innerText = `Find ${difficulty}. 1 per Row, Col, Region.`;
         }
@@ -197,25 +217,29 @@ function checkWin() {
         return;
     }
 
-    let rows = new Set();
-    let cols = new Set();
-    let regions = new Set();
+    // Only run complex checks for Standard/Easy modes (<=6 carrots)
+    if(targetCarrots <= 6) {
+        let rows = new Set();
+        let cols = new Set();
+        let regions = new Set();
 
-    for (let h of holes) {
-        let r = Math.floor(h / 6);
-        let c = h % 6;
-        let reg = regionMap[h];
+        for (let h of holes) {
+            let r = Math.floor(h / 6);
+            let c = h % 6;
+            let reg = regionMap[h];
 
-        // Strict Rules (Only for Easy/Normal)
-        if(targetCarrots <= 6) {
             if (rows.has(r)) { showPenalty("Row Conflict!"); return; }
             if (cols.has(c)) { showPenalty("Column Conflict!"); return; }
             if (regions.has(reg)) { showPenalty("Region Conflict!"); return; }
+
+            rows.add(r); cols.add(c); regions.add(reg);
         }
+    }
 
-        rows.add(r); cols.add(c); regions.add(reg);
-
-        // ALWAYS enforce No Touching
+    // ALWAYS enforce No Touching (For ALL modes)
+    for (let h of holes) {
+        let r = Math.floor(h / 6);
+        let c = h % 6;
         for (let other of holes) {
             if (h === other) continue;
             let or = Math.floor(other / 6);
@@ -226,6 +250,7 @@ function checkWin() {
             }
         }
     }
+
     doWin();
 }
 
@@ -247,25 +272,9 @@ function doWin() {
     clearInterval(timerInterval);
     
     for(let i=0; i<36; i++) {
-        // Clear board first to show carrots nicely
         let cell = document.getElementById(`c-${i}`);
         cell.innerHTML = '';
         if(boardSolution[i]) {
             cell.innerHTML = '<div class="carrot-win">🥕</div>';
         }
     }
-
-    winOverlay.classList.remove('hidden');
-    let msg = (currentMode === 'daily') ? `Time: ${timeEl.innerText}` : "Relaxed & Solved!";
-    document.getElementById('win-text').innerText = msg;
-}
-
-function shareScore() {
-    let txt = (currentMode === 'daily') 
-        ? `🐰 Poogy Daily ${new Date().toISOString().slice(0,10)} \nTime: ${timeEl.innerText}`
-        : `🐰 Poogy Relax Mode (${targetCarrots} carrots) solved!`;
-    navigator.clipboard.writeText(txt);
-    alert("Score copied!");
-}
-
-initGame('menu');
