@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Poogy's Garden</title>
+    <title>Poogy's OCD Rabbits</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <header>
-        <button class="btn-exit" onclick="location.reload()">✕</button>
+        <button id="exit-btn" class="btn-exit" onclick="location.reload()">✕</button>
+        
         <svg class="poogy-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <g>
                 <ellipse cx="35" cy="30" rx="10" ry="25" fill="#fff" stroke="#eee" stroke-width="2"/>
@@ -25,41 +26,49 @@
             </g>
         </svg>
         <h1>Poogy</h1>
-        <div id="mode-title" class="subtitle">Loading...</div>
+        <div id="mode-title" class="subtitle">Menu</div>
     </header>
 
     <div class="game-container">
         <div id="start-overlay" class="overlay">
+            
+            <div class="story-box">
+                <strong>These rabbits are OCD!</strong><br>
+                They refuse to share a row, a column, or a color patch. 
+                <br>They also hate touching.
+                <br>Can you find spots for them all?
+            </div>
+
             <div class="menu-card">
                 <h3 style="margin:0 0 10px 0;">📅 Daily Challenge</h3>
-                <button class="btn-main" style="font-size:1rem; padding:10px;" onclick="selectMode('daily')">PLAY DAILY</button>
+                <button class="btn-main" style="font-size:1rem; padding:10px;" onclick="selectMode('daily', 6)">PLAY DAILY (6x6)</button>
             </div>
 
             <div class="menu-card">
                 <h3 style="margin:0 0 10px 0;">🧩 Relax Mode</h3>
                 <div style="display:flex; justify-content:center; gap:5px;">
                     <button class="btn-mode" onclick="selectMode('practice', 5)">Easy (5)</button>
-                    <button class="btn-mode" onclick="selectMode('practice', 6)">Normal (6)</button>
-                    <button class="btn-mode" onclick="selectMode('practice', 7)">Hard (7)</button>
+                    <button class="btn-mode" onclick="selectMode('practice', 6)">Med (6)</button>
+                    <button class="btn-mode" style="background:#ffcdd2; color:#c62828" onclick="selectMode('practice', 7)">Hard (7)</button>
                 </div>
             </div>
         </div>
 
         <div id="win-modal" class="overlay hidden">
-            <div style="font-size: 5rem;" class="carrot-win">🥕</div>
-            <h2>DELICIOUS!</h2>
-            <p id="win-text">Garden Clear!</p>
+            <div style="font-size: 5rem;" class="carrot-win">🐰</div>
+            <h2>PERFECT!</h2>
+            <p id="win-text">Solved!</p>
             <button class="btn-main" onclick="shareScore()">SHARE SCORE</button>
-            <button onclick="location.reload()" style="margin-top:20px; background:none; border:none; color:white; text-decoration:underline; cursor:pointer;">Back to Menu</button>
+            <button onclick="location.reload()" style="margin-top:20px; background:none; border:none; color:white; text-decoration:underline; cursor:pointer;">Menu</button>
         </div>
 
         <div id="grid" class="blurred"></div>
     </div>
 
     <div class="controls-area">
-        <p id="instruction-text">Find 6 Carrots. No Touching!</p>
-        <div id="time-display" style="font-size: 1.5rem; font-weight:bold; color:#2e7d32; margin-bottom:5px;">00:00</div>
-        <button id="check-btn" class="btn-main" onclick="checkWin()">DIG FOR CARROTS</button>
+        <p id="instruction-text" style="color:#2e7d32; font-weight:bold;">Select a mode to start</p>
+        <div id="time-display" style="font-size: 1.5rem; font-weight:bold; color:#2e7d32; margin-bottom:5px; display:none;">00:00</div>
+        <button id="check-btn" class="btn-main" onclick="checkWin()">CHECK SOLUTION</button>
     </div>
 
     <script src="game.js"></script>
