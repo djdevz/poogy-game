@@ -8,7 +8,7 @@ let startTime;
 let penaltySeconds = 0;
 let isGameActive = false;
 let currentMode = 'daily';
-let targetCarrots = 6; // Default
+let targetCarrots = 6;
 
 // --- DOM ELEMENTS ---
 const gridEl = document.getElementById('grid');
@@ -27,7 +27,7 @@ function mulberry32(a) {
     }
 }
 
-// --- SMART GENERATOR ---
+// --- LEVEL GENERATOR ---
 function generateLevel(seed, numCarrots) {
     const rng = mulberry32(seed);
     let attempts = 0;
@@ -41,21 +41,19 @@ function generateLevel(seed, numCarrots) {
         let rows = [0,1,2,3,4,5];
         let cols = [0,1,2,3,4,5];
         
-        // Shuffle logic
         rows.sort(() => rng() - 0.5);
         cols.sort(() => rng() - 0.5);
 
         let validPlacement = true;
         
-        // Try to place 'numCarrots'
         for(let i=0; i < numCarrots; i++) {
-            // If we run out of unique rows/cols (for Hard mode > 6), pick random available spots
             let r, c;
+            // Strict rows/cols for the first 6
             if(i < 6) {
                 r = rows[i];
                 c = cols[i];
             } else {
-                // For the 7th or 8th carrot, we must scan for ANY valid spot left
+                // Find any empty spot for extra carrots (Hard mode)
                 let possible = [];
                 for(let x=0; x<36; x++) {
                     if(!boardSolution[x]) possible.push(x);
@@ -66,7 +64,7 @@ function generateLevel(seed, numCarrots) {
                 c = pick%6;
             }
             
-            // Check NO TOUCHING rule
+            // NO TOUCHING RULE
             for(let existing of carrots) {
                 if(Math.abs(existing.r - r) <= 1 && Math.abs(existing.c - c) <= 1) {
                     validPlacement = false;
@@ -75,21 +73,20 @@ function generateLevel(seed, numCarrots) {
             }
             if(!validPlacement) break;
             
-            // Store carrot with a region ID (mod 6 to recycle colors if >6 carrots)
             carrots.push({r, c, color: i % 6});
             boardSolution[r*6 + c] = true;
         }
 
-        // Only accept if we successfully placed ALL required carrots
         if(validPlacement && carrots.length === numCarrots) {
             success = true;
             generateRegions(carrots, rng);
         }
     }
     
+    // Fallback if generation fails (very rare)
     if(!success) {
-        console.log("Could not generate board, retrying...");
-        generateLevel(seed + 1, numCarrots); // Fallback
+        console.log("Retry gen...");
+        generateLevel(seed + 1, numCarrots); 
     }
 }
 
@@ -113,7 +110,14 @@ function generateRegions(carrots, rng) {
     }
 }
 
-// --- GAME LOOP ---
+// --- GAME STATE MANAGEMENT ---
+
+// This function is called when a button is clicked
+function selectMode(mode, difficulty) {
+    initGame(mode, difficulty);
+    startGame(); // Immediately start playing
+}
+
 function initGame(mode, difficulty = 6) {
     currentMode = mode;
     targetCarrots = difficulty;
@@ -129,21 +133,24 @@ function initGame(mode, difficulty = 6) {
         const today = new Date().toISOString().slice(0, 10);
         seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         document.getElementById('mode-title').innerText = "Daily Challenge: " + today;
-        timeEl.style.display = 'block'; // Show Timer
-        targetCarrots = 6; // Daily is always standard
+        timeEl.style.display = 'block'; 
+        targetCarrots = 6; 
         instructEl.innerText = "Find 6 Carrots. No touching!";
+    } else if (mode === 'menu') {
+        // Just a background for the menu
+        seed = Math.floor(Math.random() * 10000); 
+        document.getElementById('mode-title').innerText = "Select a Mode";
     } else {
+        // Practice Mode
         seed = Math.floor(Math.random() * 100000);
         document.getElementById('mode-title').innerText = "Relax Mode (" + difficulty + " Carrots)";
-        timeEl.style.display = 'none'; // Hide Timer
+        timeEl.style.display = 'none'; 
     }
 
     generateLevel(seed, targetCarrots);
     renderBoard();
     
-    startOverlay.classList.remove('hidden');
-    winOverlay.classList.add('hidden');
-    gridEl.classList.add('blurred');
+    // Reset Timer UI
     timeEl.innerText = "00:00";
 }
 
@@ -164,7 +171,6 @@ function startGame() {
     isGameActive = true;
     startTime = Date.now();
     
-    // Only run timer if Daily Mode
     clearInterval(timerInterval);
     if(currentMode === 'daily') {
         timerInterval = setInterval(() => {
@@ -183,7 +189,6 @@ function handleInput(idx) {
     cell.innerHTML = playerBoard[idx] ? '🕳️' : '';
 }
 
-// --- NEW VALIDATION LOGIC ---
 function checkWin() {
     if(!isGameActive) return;
 
@@ -206,25 +211,16 @@ function checkWin() {
         let c = h % 6;
         let reg = regionMap[h];
 
-        // For Hard mode (>6 carrots), we allow multiple per row/col/region if necessary?
-        // Actually, let's keep the rules strict:
-        // IF targetCarrots <= 6, enforce Unique Row/Col.
-        // IF targetCarrots > 6 (Hard), we MUST relax the Row/Col rule, 
-        // OR we just rely on "No Touching" as the main constraint.
-        
         // Strict Rules (Only apply if we have 6 or fewer carrots)
         if(targetCarrots <= 6) {
             if (rows.has(r)) { showPenalty("Row Conflict!"); return; }
             if (cols.has(c)) { showPenalty("Column Conflict!"); return; }
-            // Note: We don't strictly enforce region uniqueness in code here 
-            // because random generation might rarely force 2 in a region for valid math.
-            // But usually, standard Sudoku rules apply. Let's keep it simple:
             if (regions.has(reg)) { showPenalty("Region Conflict!"); return; }
         }
 
         rows.add(r); cols.add(c); regions.add(reg);
 
-        // ALWAYS enforce No Touching (The Golden Rule)
+        // ALWAYS enforce No Touching
         for (let other of holes) {
             if (h === other) continue;
             let or = Math.floor(other / 6);
@@ -235,16 +231,13 @@ function checkWin() {
             }
         }
     }
-
     doWin();
 }
 
 function showPenalty(msg) {
-    // Only add time penalty in Daily Mode
     if(currentMode === 'daily') penaltySeconds += 10;
     
     const btn = document.getElementById('check-btn');
-    const originalText = btn.innerText;
     btn.style.backgroundColor = '#ef5350';
     btn.innerText = msg;
     setTimeout(() => {
@@ -257,7 +250,7 @@ function doWin() {
     isGameActive = false;
     clearInterval(timerInterval);
     
-    // Reveal
+    // Reveal Carrots
     for(let i=0; i<36; i++) {
         if(boardSolution[i]) document.getElementById(`c-${i}`).innerHTML = '🥕';
     }
@@ -271,12 +264,9 @@ function shareScore() {
     let txt = (currentMode === 'daily') 
         ? `🐰 Poogy Daily ${new Date().toISOString().slice(0,10)} \nTime: ${timeEl.innerText}`
         : `🐰 Poogy Relax Mode (${targetCarrots} carrots) solved!`;
-    
     navigator.clipboard.writeText(txt);
     alert("Score copied!");
 }
 
-// Start with menu open
-initGame('menu'); 
-// (We use a dummy mode 'menu' just to load the background, 
-// the overlay will block interaction anyway)
+// Initialize Menu Background
+initGame('menu');
